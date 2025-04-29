@@ -2,15 +2,25 @@
 # MAGIC %md
 # MAGIC # Databricks Runtime - Release, support, spark, variants
 # MAGIC Scrape Databricks release details of Databricks Runtimes (DBR)
+# MAGIC
+# MAGIC **Current Features:**
+# MAGIC * Retrieve HTML response from DBR release notes page
+# MAGIC * Extract release versions and various details like dates
+# MAGIC * Deduplicate the list
+# MAGIC * Load into a dataframe
+# MAGIC
+# MAGIC **Future Features:**
+# MAGIC * Include scrape of expired runtimes https://learn.microsoft.com/en-us/azure/databricks/archive/runtime-release-notes/
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Functions
+# MAGIC #### Functions
 
 # COMMAND ----------
 
 import requests
+from bs4 import BeautifulSoup
 
 def get_runtime_release_details(url):
     # Send a GET request to the URL
@@ -51,10 +61,10 @@ def get_release_details(table):
       
       variants = []
       for li in cells[1]:
-          a_tag = li.find("a")
-          if a_tag:
-              variants.append({'link_text':a_tag.get_text()
-                              ,'link_href':a_tag.get("href") })
+          a_tags = li.find_all("a")
+          for a in a_tags:
+              variants.append({'link_text':a.get_text()
+                              ,'link_href':a.get("href") })
 
       releases.append( {
           'release': cells[0].text.strip()
@@ -69,7 +79,7 @@ def get_release_details(table):
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Main program
+# MAGIC #### Retrieve content
 
 # COMMAND ----------
 
@@ -84,6 +94,11 @@ from pprint import pprint as pp
 
 pp(runtimes_supported)
 
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Build dataframe and display
 
 # COMMAND ----------
 
