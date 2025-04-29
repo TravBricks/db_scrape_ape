@@ -11,15 +11,24 @@
 
 # COMMAND ----------
 
-catalog = "uc_travislongwell"
+catalog = "travis_longwell_testing"
 schema = "scrape_ape"
 volume = "docs"
 folder = "dbr"
 docs_path = f"/Volumes/{catalog}/{schema}/{volume}/{folder}"
 
-spark.sql(f"CREATE CATALOG IF NOT EXISTS {catalog}")
-spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog}.{schema}")
-spark.sql(f"CREATE VOLUME IF NOT EXISTS {catalog}.{schema}.{volume}")
+def catalog_exists(catalog_name):
+    try:
+        result = spark.sql(f"SHOW CATALOGS LIKE '{catalog_name}'")
+        return result.count() > 0
+    except:
+        return False
+
+if not catalog_exists(catalog):
+    _ = spark.sql(f"CREATE CATALOG IF NOT EXISTS {catalog}")
+
+_ = spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog}.{schema}")
+_ = spark.sql(f"CREATE VOLUME IF NOT EXISTS {catalog}.{schema}.{volume}")
 _ = dbutils.fs.mkdirs(docs_path)
 
 # COMMAND ----------
